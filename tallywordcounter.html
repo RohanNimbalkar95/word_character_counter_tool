@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tally — Word & Character Counter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15181f;
+    --ink-soft:#1f2330;
+    --paper:#faf8f3;
+    --paper-dim:#eeeae1;
+    --accent:#e8743b;
+    --accent-soft:#f3a37a;
+    --text-dim:#6b7280;
+    --text-card:#2a2d34;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:var(--ink);
+    background-image:radial-gradient(circle at 15% 10%, var(--ink-soft) 0%, var(--ink) 55%);
+    font-family:'Inter',sans-serif;
+    color:var(--paper);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:48px 20px 32px;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--accent-soft);
+    margin-bottom:10px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:clamp(28px,5vw,40px);
+    margin:0 0 6px;
+    letter-spacing:-0.01em;
+  }
+  .subtitle{
+    color:#9aa0ad;
+    font-size:15px;
+    margin:0 0 36px;
+    text-align:center;
+    max-width:420px;
+  }
+  .card{
+    width:100%;
+    max-width:640px;
+    background:var(--paper);
+    border-radius:20px;
+    padding:28px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+  }
+  textarea{
+    width:100%;
+    min-height:200px;
+    resize:vertical;
+    border:1.5px solid var(--paper-dim);
+    border-radius:12px;
+    padding:16px;
+    font-family:'Inter',sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    color:var(--text-card);
+    background:#fff;
+    outline:none;
+    transition:border-color .15s ease;
+  }
+  textarea:focus{ border-color:var(--accent); }
+  textarea::placeholder{ color:#b7b2a6; }
+
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin-top:20px;
+  }
+  .stat{
+    background:#fff;
+    border-radius:12px;
+    padding:14px 10px;
+    text-align:center;
+    border:1px solid var(--paper-dim);
+  }
+  .stat-num{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    font-size:clamp(20px,4vw,26px);
+    color:var(--ink);
+    font-variant-numeric:tabular-nums;
+    transition:color .12s ease, transform .12s ease;
+  }
+  .stat-num.pulse{
+    color:var(--accent);
+    transform:scale(1.08);
+  }
+  .stat-label{
+    font-size:11px;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    margin-top:4px;
+  }
+
+  .actions{
+    display:flex;
+    justify-content:flex-end;
+    margin-top:16px;
+  }
+  .clear-btn{
+    font-family:'Inter',sans-serif;
+    font-weight:500;
+    font-size:14px;
+    color:var(--text-dim);
+    background:none;
+    border:1.5px solid var(--paper-dim);
+    border-radius:8px;
+    padding:8px 16px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .clear-btn:hover{ border-color:var(--accent); color:var(--accent); }
+
+  footer{
+    margin-top:36px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    text-align:center;
+  }
+  .author{
+    font-size:13px;
+    color:#9aa0ad;
+  }
+  .author strong{ color:var(--paper); font-weight:600; }
+  .dh-btn{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    color:var(--ink);
+    background:var(--accent);
+    border:none;
+    border-radius:999px;
+    padding:9px 20px;
+    text-decoration:none;
+    transition:transform .15s ease, background .15s ease;
+  }
+  .dh-btn:hover{ background:var(--accent-soft); transform:translateY(-1px); }
+
+  @media (max-width:420px){
+    .stats{ grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+  <div class="eyebrow">plain text, exact numbers</div>
+  <h1>Tally</h1>
+  <p class="subtitle">A word & character counter for captions, tweets, and assignment limits.</p>
+
+  <div class="card">
+    <textarea id="input" placeholder="Start typing or paste your text here…"></textarea>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num" id="words">0</div>
+        <div class="stat-label">Words</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="chars">0</div>
+        <div class="stat-label">Characters</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="charsNoSpace">0</div>
+        <div class="stat-label">No Spaces</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="sentences">0</div>
+        <div class="stat-label">Sentences</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="clear-btn" id="clearBtn">Clear</button>
+    </div>
+  </div>
+
+  <footer>
+    <div class="author"><strong>Rohan Nimbalkar</strong> · rohannimbalkar505@gmail.com</div>
+    <a class="dh-btn" href="https://digitalheroesco.com" target="_blank" rel="noopener">Built for Digital Heroes</a>
+  </footer>
+
+<script>
+  const input = document.getElementById('input');
+  const wordsEl = document.getElementById('words');
+  const charsEl = document.getElementById('chars');
+  const charsNoSpaceEl = document.getElementById('charsNoSpace');
+  const sentencesEl = document.getElementById('sentences');
+  const clearBtn = document.getElementById('clearBtn');
+
+  function pulse(el){
+    el.classList.add('pulse');
+    setTimeout(() => el.classList.remove('pulse'), 150);
+  }
+
+  function update(){
+    const text = input.value;
+
+    const words = text.trim().length ? text.trim().split(/\s+/).length : 0;
+    const chars = text.length;
+    const charsNoSpace = text.replace(/\s/g, '').length;
+    const sentences = text.trim().length
+      ? (text.match(/[.!?]+(\s|$)/g) || []).length || (text.trim() ? 1 : 0)
+      : 0;
+
+    wordsEl.textContent = words;
+    charsEl.textContent = chars;
+    charsNoSpaceEl.textContent = charsNoSpace;
+    sentencesEl.textContent = sentences;
+
+    [wordsEl, charsEl, charsNoSpaceEl, sentencesEl].forEach(pulse);
+  }
+
+  input.addEventListener('input', update);
+  clearBtn.addEventListener('click', () => {
+    input.value = '';
+    update();
+    input.focus();
+  });
+</script>
+
+</body>
+</html>
